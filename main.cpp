@@ -154,18 +154,160 @@ class Schiet : public Actie{
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-class Tackle : public Actie{};
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-class Inworp : public Actie{};
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-class Redding : public Actie{};
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-class Opraap : public Actie{};
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class Tackle : public Actie{
+    private:
+        bool correctUitgevoerd;
+        bool kaartGekregen;
+        string kaartKleur;
+    public:
+        Tackle();
+        Tackle(bool correct);
+        Tackle(bool correct, bool kaart, string kaartKleur);
+        ~Tackle();
+
+        //getters
+        bool getCorrectUitgevoerd();
+        bool getKaartGekregen();
+        string getKaartKleur();
+
+        //setters
+        void setCorrectUitgevoerd(bool b);
+        void setKaartGekregen(bool b);
+        void setKaartKleur(string kaart);
 
 
-/*class Speler{
-private:
+
+
+
+};/////////////einde klasse//////////////////////////
+
+    Tackle::Tackle() :Actie("tackle"){
+        correctUitgevoerd = true;
+        kaartGekregen = false;
+        kaartKleur = "";
+    }
+
+    Tackle::Tackle(bool correct):Actie("tackle") {
+        correctUitgevoerd = correct;
+        kaartGekregen = false;
+        kaartKleur = "";
+    }
+
+    Tackle::Tackle(bool correct, bool kaart, string kaartKleur): Actie("tackle") {
+        this->correctUitgevoerd = correct;
+        this->kaartGekregen = kaart;
+        this->kaartKleur = kaartKleur;
+    }
+
+    Tackle::~Tackle() {}
+
+    //getters
+    bool Tackle::getCorrectUitgevoerd() {return correctUitgevoerd;}
+    bool Tackle::getKaartGekregen() {return kaartGekregen;}
+    string Tackle::getKaartKleur() {return kaartKleur;}
+
+    //setters
+    void Tackle::setCorrectUitgevoerd(bool b) {correctUitgevoerd= b;}
+    void Tackle::setKaartGekregen(bool b) {kaartGekregen = b;}
+    void Tackle::setKaartKleur(string kaart) {
+        if(kaartGekregen){kaartKleur = kaart;}
+        else{cout<<"geen kaart gekregen";}
+    }
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+class Inworp : public Actie{
+    private:
+        bool naarTeamSpeler;
+    public:
+        Inworp();
+        Inworp(bool naarTeamSpeler);
+        ~Inworp();
+
+        bool getNaarTeamSpeler();
+        void setNaarTeamSpeler(bool b);
+
+
+
+
+
+
+};/////////////einde klasse//////////////////////////
+
+    Inworp::Inworp() :Actie("inworp"){
+        naarTeamSpeler = true;
+    }
+
+    Inworp::Inworp(bool naarTeamSpeler) :Actie("inworp"){
+        this->naarTeamSpeler = naarTeamSpeler;
+    }
+
+    Inworp::~Inworp() {}
+
+    bool Inworp::getNaarTeamSpeler() {return naarTeamSpeler;}
+    void Inworp::setNaarTeamSpeler(bool b) {naarTeamSpeler = b;}
+
+
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+class Redding : public Actie{
+    private:
+        bool gered;
+    public:
+        Redding();
+        Redding(bool gered);
+        ~Redding();
+
+        void setGered(bool b);
+        bool getGered();
+
+};/////////////einde klasse//////////////////////////
+
+        Redding::Redding():Actie("redding"){
+            gered = false;
+        }
+
+        Redding::Redding(bool gered):Actie("redding") {
+            this->gered = gered;
+        }
+
+        Redding::~Redding() {}
+
+        void Redding::setGered(bool b) {gered = b;}
+        bool Redding::getGered() {return gered;}
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+class Opraap : public Actie{
+    private:
+        bool inCarre;
+    public:
+        Opraap();
+        Opraap(bool inCarre);
+        ~Opraap();
+
+        void setOpraap(bool b);
+        bool getOpraap();
+};/////////////einde klasse//////////////////////////
+
+        Opraap::Opraap():Actie("opraap"){
+            inCarre = true;
+        }
+
+        Opraap::Opraap(bool inCarre):Actie("opraap") {
+            this->inCarre = inCarre;
+        }
+
+        Opraap::~Opraap(){}
+
+        void Opraap::setOpraap(bool b) {inCarre = b;}
+
+        bool Opraap::getOpraap() {return inCarre;}
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+class Speler{
+protected:
     vector<Actie*> acties; //heeft een lijst van acties
     string naam;
     string positie;
