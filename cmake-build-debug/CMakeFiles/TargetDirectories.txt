@@ -1,0 +1,3 @@
+C:/Users/tibor/CLionProjects/labo2/dynamic_cast/cmake-build-debug/CMakeFiles/dynamic_cast.dir
+C:/Users/tibor/CLionProjects/labo2/dynamic_cast/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/tibor/CLionProjects/labo2/dynamic_cast/cmake-build-debug/CMakeFiles/rebuild_cache.dir

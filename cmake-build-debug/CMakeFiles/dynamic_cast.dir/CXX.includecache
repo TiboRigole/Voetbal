@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/tibor/CLionProjects/labo2/dynamic_cast/main.cpp
+iostream
+-
+vector
+-
+math.h
+-
+algorithm
+-
+

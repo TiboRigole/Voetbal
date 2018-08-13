@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -11,9 +12,10 @@ public:
     Actie();
     Actie(string type);
     Actie(const Actie &a);  //copyconstructor
-    ~Actie();
-    string getType();
 
+    string getType();
+    virtual ~Actie(){}; //ANDERS KUNNEN WE NIET DYNAMIC CASTEN
+    //https://stackoverflow.com/questions/15114093/getting-source-type-is-not-polymorphic-when-trying-to-use-dynamic-cast
 
 
 
@@ -26,7 +28,7 @@ public:
 
     Actie::Actie(const Actie &a): type(a.type) {}
 
-    Actie::~Actie() {}
+
 
     string Actie::getType() {return type;}
 
@@ -307,71 +309,526 @@ class Opraap : public Actie{
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 class Speler{
+
 protected:
     vector<Actie*> acties; //heeft een lijst van acties
-    string naam;
-    string positie;
 public:
-    Speler();
-    Speler(string naam, string positie);
-    Speler(const Speler &sp);
-    ~Speler();
+    const string &getNaam() const;
+
+    const string &getPositie() const;
+
+    int getAantalKmGelopen() const;
+
+    int getAantalPasses() const;
+
+    int getAantalGoedePasses() const;
+
+    int getAantalSchoten() const;
+
+    int getAantalSchotenOpDoel() const;
+
+    int getAantalDoelpunten() const;
+
+    int getAantalKaarten() const;
+
+    int getAantalTackles() const;
+
+    int getAantalInworpen() const;
+
+    int getAantalGoedeInworpen() const;
+
+    int getAantalReddingen() const;
+
+    int getAantalBallenOpgeraapt() const;
+
+protected:
+    const string naam;
+    const string positie;
+    int aantalKmGelopen;
+    int aantalPasses;
+    int aantalGoedePasses;
+    int aantalSchoten;
+    int aantalSchotenOpDoel;
+    int aantalDoelpunten;
+    int aantalKaarten;
+    int aantalTackles;
+    int aantalInworpen;
+    int aantalGoedeInworpen;
+    int aantalReddingen;
+    int aantalBallenOpgeraapt;
+
+public:
+    Speler();   //ok
+    Speler(string naam, string positie);    //ok
+    Speler(const Speler &sp);   // niet zeker als ok, problemen met de acties
+    virtual ~Speler() {  //ok
+        //itereren over de acties, deze moeten manueel verwijderd worden aangezien het pointers zijn$
+        vector<Actie*>::iterator it;
+        for (it = acties.begin(); it!=acties.end(); it++){
+            delete (*it);
+        }
+    }
+
+    void doeActie(Actie* actie){
+        acties.push_back(actie);
+    }
+
+    void geefPunten(){
+        vector<Actie*>::iterator ait;   //actieiterator
+        for(ait = acties.begin(); ait != acties.end(); ait++){
+            string s = (*ait)->getType();
+            if(s=="lopen"){
+                Loop *loop;
+                loop = dynamic_cast<Loop*> (*ait);
+
+                if(loop != 0){
+                    aantalKmGelopen += loop->getAfstand();
+                }
+            }
+            else if(s =="pas"){
+                aantalPasses++;
+                Pas *pas;
+                pas = dynamic_cast<Pas*> (*ait);
+
+                if(pas != 0){
+                    if (pas->getGoedePas()){aantalGoedePasses++;}
+                }
+
+            }
+            else if(s == "schiet"){
+                aantalSchoten++;
+                Schiet * schiet;
+                schiet = dynamic_cast<Schiet*> (*ait);
+                if(schiet != 0){
+                    if (schiet->getOpDoel()){aantalSchotenOpDoel++;}
+                    if (schiet->getBinnen()){aantalDoelpunten++;}
+                }
+            }
+            else if(s=="tackle"){
+                aantalTackles++;
+                Tackle* tak ;
+                tak = dynamic_cast<Tackle*> (*ait);
+                if(tak != 0){
+                    if(! (tak->getCorrectUitgevoerd())){
+                        aantalKaarten++;
+                    }
+                }
+            }
+            else if(s=="inworp"){
+                aantalInworpen++;
+                Inworp *iw;
+                iw = dynamic_cast<Inworp*> (*ait);
+                if(iw != 0){
+                    if(iw->getNaarTeamSpeler()){aantalGoedeInworpen++;}
+                }
+            }
+            else if(s=="redding"){
+                Redding *red;
+                red = dynamic_cast<Redding*> (*ait);
+                if(red != 0){
+                    if(red->getGered()){aantalReddingen++;}
+                }
+            }
+            else if(s=="opraap"){
+                aantalBallenOpgeraapt++;
+            }
+            else(cout<<"foute actie");
+
+        }
+    }
+
+    void print(){
+        cout<<"naam:                 "<<naam<<endl;
+        cout<<"positie:              "<<positie<<endl;
+        cout<<"aantalkmgelopen :     "<<aantalKmGelopen<<endl;
+        cout<<"aantal passes :       "<<aantalPasses<<endl;
+        cout<<"aantal goede passes : "<<aantalGoedePasses<<endl;
+        cout<<"aantal schoten :      "<<aantalSchoten<<endl;
+        cout<<"waarvan op doel :     "<<aantalSchotenOpDoel<<endl;
+        cout<<"waarvan binnen :      "<<aantalDoelpunten<<endl;
+        cout<<"aantal kaaten :       "<<aantalKaarten<<endl;
+        cout<<"aantal tackles :      "<<aantalTackles<<endl;
+        cout<<"aantal inworpen :     "<<aantalInworpen<<endl;
+        cout<<"aantal reddingen :    "<<aantalReddingen<<endl;
+        cout<<"aantal ballen op geraapt: "<<aantalBallenOpgeraapt<<endl;
+
+    }
 
 
 
 
 
 
-};
 
+
+
+
+
+};/////////////////////////einde klasse///////////////////////////
+
+bool doelmanComparator(Speler *sp1, Speler *sp2){
+    return sp1->getAantalReddingen() > sp2->getAantalReddingen();
+}
+
+bool aanvallerComparator(Speler *sp1, Speler *sp2){
+    return sp1->getAantalDoelpunten() > sp2->getAantalDoelpunten();
+}
+
+bool verdedigerComparator(Speler *sp1, Speler *sp2){
+    return sp1->getAantalTackles() > sp2->getAantalTackles();
+}
+
+bool middenVelderComparator(Speler *sp1, Speler *sp2){
+    return sp1->getAantalGoedePasses() >sp2->getAantalGoedePasses();
+}
+
+    Speler::Speler(): naam("niemand"),positie("nergens") {
+        aantalKmGelopen = 0;
+        aantalPasses = 0;
+        aantalGoedePasses = 0;
+        aantalSchoten = 0;
+        aantalSchotenOpDoel = 0;
+        aantalDoelpunten = 0;
+        aantalKaarten = 0;
+        aantalTackles = 0;
+        aantalInworpen = 0;
+        aantalGoedeInworpen = 0;
+        aantalReddingen = 0;
+        aantalBallenOpgeraapt = 0;
+    }
+    Speler::Speler(string naam, string positie): naam(naam),positie(positie) {
+        aantalKmGelopen = 0;
+        aantalPasses = 0;
+        aantalGoedePasses = 0;
+        aantalSchoten = 0;
+        aantalSchotenOpDoel = 0;
+        aantalDoelpunten = 0;
+        aantalKaarten = 0;
+        aantalTackles = 0;
+        aantalInworpen = 0;
+        aantalGoedeInworpen = 0;
+        aantalReddingen = 0;
+        aantalBallenOpgeraapt = 0;
+    }
+
+
+const string &Speler::getNaam() const {
+    return naam;
+}
+
+const string &Speler::getPositie() const {
+    return positie;
+}
+
+int Speler::getAantalKmGelopen() const {
+    return aantalKmGelopen;
+}
+
+int Speler::getAantalPasses() const {
+    return aantalPasses;
+}
+
+int Speler::getAantalGoedePasses() const {
+    return aantalGoedePasses;
+}
+
+int Speler::getAantalSchoten() const {
+    return aantalSchoten;
+}
+
+int Speler::getAantalSchotenOpDoel() const {
+    return aantalSchotenOpDoel;
+}
+
+int Speler::getAantalDoelpunten() const {
+    return aantalDoelpunten;
+}
+
+int Speler::getAantalKaarten() const {
+    return aantalKaarten;
+}
+
+int Speler::getAantalTackles() const {
+    return aantalTackles;
+}
+
+int Speler::getAantalInworpen() const {
+    return aantalInworpen;
+}
+
+int Speler::getAantalGoedeInworpen() const {
+    return aantalGoedeInworpen;
+}
+
+int Speler::getAantalReddingen() const {
+    return aantalReddingen;
+}
+
+int Speler::getAantalBallenOpgeraapt() const {
+    return aantalBallenOpgeraapt;
+}
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 class Keeper: public Speler {
-private:
-    int aantalGoalsSaved;
-    int aantalGoalsBinnengelaten;
 public:
-
+    Keeper(string naam):Speler(naam, "keeper"){}
+    ~Keeper(){};
 };
-class Verdediger : public Speler {};
-class Middenvelder : public Speler {};
-class Aanvaller : public Speler {};
+class Verdediger : public Speler {
+public:
+    Verdediger(string naam):Speler(naam, "verdediger"){};
+    ~Verdediger(){};
+};
+class Middenvelder : public Speler {
+public:
+    Middenvelder(string naam ):Speler(naam,"middenvelder"){};
+    ~Middenvelder(){};
+};
+class Aanvaller : public Speler {
+public:
+    Aanvaller(string naam):Speler(naam,"aanvaller"){};
+    ~Aanvaller(){};
+};
 
-/*
- * elke speler heeft acties
- *          loop
- *          pas
- *          schiet
- *          takle
- *          inworp
- *          redding
- *          opraap
- *          ...
- *
- * na de wedstrijd: statistieken printen
- *              uit loopacties : aantal gelopen km berekenen
- *              uit schietacties:aantal goals
- *                              aantal schoten op doel
- *                              totaal aantal schoten
- *
- * begin wedstrijd: trainer kan de spelers met meeste aantal punten in de lijst opvragen
- * geeft mee welk type speeler hij wi
- * hij gaat bvb 1x de beste keepers vragen, 4 maal de beste verdediger, .. elke speler krijgt dan ook punten na elke wedstrijd
- *
- */
+
+class Trainer{
+private:
+    vector<Speler*> spelers;
+
+public:
+    Trainer(){}
+    ~Trainer(){
+        //de vectorLijst moet gedelete worden
+        vector<Speler*>::iterator it;
+        for(it = spelers.begin(); it != spelers.end(); it++){
+            delete (*it);
+        }
+    };
+
+    void voegSpelerToe(Speler *sp){
+        spelers.push_back(sp);
+    }
+
+    void geefPunten(){
+        //grote methode man
+        vector<Speler*>::iterator it;
+        for(it = spelers.begin(); it!= spelers.end(); it++){
+
+            (*it)->geefPunten();
+        }
+
+    }
+
+
+    vector<Speler*> neemBesteSpeler(string typeSpeler, int aantal) {
+
+        vector<Speler*> spelersVanDeSoort;
+        vector<Speler*>::iterator it;
+        if(typeSpeler =="keeper"){  // meeste aantal reddingen
+            Keeper *keep;
+            for(it = spelers.begin(); it != spelers.end(); it++){
+                keep = dynamic_cast<Keeper*> (*it);
+                if(keep !=0){
+                    spelersVanDeSoort.push_back(keep);
+                }
+            }
+
+            sort(spelersVanDeSoort.begin(), spelersVanDeSoort.end(), doelmanComparator);
+            spelersVanDeSoort.resize(aantal);
+            return spelersVanDeSoort;
+        }
+        else if(typeSpeler =="middenvelder"){
+            Middenvelder* mdv;
+            for(it = spelers.begin(); it !=spelers.end(); it++){
+                mdv = dynamic_cast<Middenvelder*> (*it);
+                if(mdv != 0){
+                    spelersVanDeSoort.push_back(mdv);
+                }
+            }
+
+            sort(spelersVanDeSoort.begin(), spelersVanDeSoort.end(), middenVelderComparator);
+            spelersVanDeSoort.resize(aantal);
+            return spelersVanDeSoort;
+
+        }
+        else if(typeSpeler =="verdediger"){
+            Verdediger *vd;
+            for(it = spelers.begin(); it !=spelers.end(); it++){
+                vd = dynamic_cast<Verdediger*> (*it);
+                if(vd != 0){
+                    spelersVanDeSoort.push_back(vd);
+                }
+            }
+
+            sort(spelersVanDeSoort.begin(), spelersVanDeSoort.end(), verdedigerComparator);
+            spelersVanDeSoort.resize(aantal);
+            return spelersVanDeSoort;
+
+
+        }
+        else if(typeSpeler =="aanvaller"){
+            Aanvaller *av;
+            for(it = spelers.begin(); it !=spelers.end(); it++){
+                av = dynamic_cast<Aanvaller*> (*it);
+                if(av != 0){
+                    spelersVanDeSoort.push_back(av);
+                }
+            }
+            sort(spelersVanDeSoort.begin(), spelersVanDeSoort.end(), aanvallerComparator);
+            spelersVanDeSoort.resize(aantal);
+            return spelersVanDeSoort;
+
+        }
+
+        //nu bevat de array allemaal spelers van hetzelfde type
+
+
+
+    }
+};
+
 
 
 int main() {
-    Actie a();
-    Actie *ap = new Actie("lopen");
-    string tekste = ap->getType();
-    cout<<tekste<<endl;
 
-    Loop l(2,2,4,4);
-    cout<<l.getAfstand()<<endl;
-    cout<<l.getType()<<endl;
+    //echte main begint vanaf hier
+    Trainer* trainer = new Trainer();
 
-    Loop *l2 = new Loop();
-    l2->setAfstand(2,2,4,4);
-    cout<<l2->getAfstand()<<endl;
+    //nu telkens spelers maken, en hen kenmerken toe eisen, dan speler toevoegen aan de lijst
+    Keeper *k1 = new Keeper("thibaut courtois");
+    k1->doeActie(new Loop(0,0,10,15));
+    k1->doeActie(new Redding(true));
+    k1->doeActie(new Redding(false));
+    k1->doeActie(new Redding(false));
+    k1->doeActie(new Opraap(true)); //in de carré = true;
+    trainer->voegSpelerToe(k1);
+
+    Keeper *k2 = new Keeper("koen kasteels");
+    k2->doeActie(new Redding(true));
+    k2->doeActie(new Redding(false));
+    k2->doeActie(new Redding(true));
+
+    k2->doeActie(new Inworp(true)); //naar team speler
+    k2->doeActie(new Inworp(false));
+    k2->doeActie(new Pas(true));    //goede pas= true
+    k2->doeActie(new Loop(1,2,9,9));
+    trainer->voegSpelerToe(k2);
+
+    Verdediger *v1 = new Verdediger("vincent kompany");
+    v1->doeActie(new Loop(10,30,50,20));
+    v1->doeActie(new Tackle(true));
+    v1->doeActie(new Tackle(true));
+    v1->doeActie(new Tackle(false));
+    v1->doeActie(new Pas(true));
+    trainer->voegSpelerToe(v1);
+
+    Verdediger *v2 = new Verdediger("marc vertongen");
+    v1->doeActie(new Loop(10,30,50,20));
+    v1->doeActie(new Tackle(true));
+    v1->doeActie(new Tackle(false,true,"rood"));
+    v1->doeActie(new Tackle(false,true,"geel"));
+    v1->doeActie(new Pas(false));
+    trainer->voegSpelerToe(v1);
+
+    Middenvelder *mdv1 = new Middenvelder("axel witsel");
+    mdv1->doeActie(new Pas(true));
+    mdv1->doeActie(new Pas(true));
+    mdv1->doeActie(new Loop(3,3,5,9));
+    mdv1->doeActie(new Schiet(true,false));
+    mdv1->doeActie(new Schiet(true, true));
+    mdv1->doeActie(new Tackle(false,true,"geel"));
+    trainer->voegSpelerToe(mdv1);
+
+    Middenvelder *mdv2 = new Middenvelder("kevin debruyne");
+    mdv1->doeActie(new Pas(true));
+    mdv1->doeActie(new Pas(true));
+    mdv1->doeActie(new Loop(3,3,5,40));
+    mdv1->doeActie(new Schiet(true,true));
+    mdv1->doeActie(new Schiet(true, true));
+    mdv1->doeActie(new Tackle(true));
+    trainer->voegSpelerToe(mdv2);
+
+    Middenvelder *mdv3 = new Middenvelder("nacer chadli");
+    mdv1->doeActie(new Pas(false));
+    mdv1->doeActie(new Pas(false));
+    mdv1->doeActie(new Loop(3,1,5,9));
+    mdv1->doeActie(new Schiet(true,false));
+    mdv1->doeActie(new Schiet(true, false));
+    mdv1->doeActie(new Tackle(false,true,"rood"));
+    trainer->voegSpelerToe(mdv3);
+
+    Aanvaller *av1 = new Aanvaller("romelu lukaku");
+    av1->doeActie(new Pas(true));
+    av1->doeActie(new Schiet(true, true));
+    av1->doeActie(new Loop(5,5,21,21));
+    av1->doeActie(new Tackle(true));
+    av1->doeActie(new Inworp(true));
+    trainer->voegSpelerToe(av1);
+
+    Aanvaller *av2 = new Aanvaller("batschiaui");
+    av1->doeActie(new Pas(false));
+    av1->doeActie(new Schiet(false, false));
+    av1->doeActie(new Loop(5,5,21,9));
+    av1->doeActie(new Tackle(false,true,"geel"));
+    av1->doeActie(new Inworp(false));
+    trainer->voegSpelerToe(av2);
+
+    trainer->geefPunten();
+    vector<Speler*> besteKeeper = trainer->neemBesteSpeler("keeper",1); //    Keeper : op aantalSaves die gered zijn
+    vector<Speler*> besteAanvaller = trainer->neemBesteSpeler("aanvaller",1); //    Aanvaller : op aantalDoelpunten
+    vector<Speler*> besteMiddenVelders = trainer->neemBesteSpeler("middenvelder",2); //    Middenvelder: op aantalGoedePasses
+    vector<Speler*> besteVerdedigers = trainer->neemBesteSpeler("verdediger",2); //    Verdediger : op aantal Tackles
+
+    vector<Speler*>::iterator it;
+    cout<<endl;
+    cout<<endl;
+    cout<<"printen van de beste keepers"<<endl;
+    for(it = besteKeeper.begin(); it != besteKeeper.end(); it++){
+        (*it)->print();
+        cout<<endl;
+    }
+
+    cout<<endl;
+    cout<<endl;
+    cout<<"printen van de beste aanvallers"<<endl;
+    for(it = besteAanvaller.begin(); it != besteAanvaller.end(); it++){
+        (*it)->print();
+        cout<<endl;
+    }
+
+    cout<<endl;
+    cout<<endl;
+    cout<<"printen van de beste middenvelders"<<endl;
+    for(it = besteMiddenVelders.begin(); it != besteMiddenVelders.end(); it++){
+        (*it)->print();
+        cout<<endl;
+    }
+
+    cout<<endl;
+    cout<<endl;
+    cout<<"printen van de beste verdedigers"<<endl;
+    for(it = besteVerdedigers.begin(); it != besteVerdedigers.end(); it++){
+        (*it)->print();
+        cout<<endl;
+    }
+
+
+    // debuggen om te kijken wat er in zit
+    cout<<"gelukt"<<endl;
+
+
+
+
+
+
+
+
+
+
+
+
 
     return 0;
+
+
 }
